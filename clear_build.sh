@@ -1,0 +1,1 @@
+rm -rf scipy/build scipy/dist scipy/.eggs
