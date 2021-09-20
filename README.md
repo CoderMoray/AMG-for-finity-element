@@ -11,17 +11,35 @@ All software developments must be well implemented using PEP8 Python coding stan
 
 # Installation
 
-`python 3.6`
-### python packages
-conda install numba tbb cudatoolkit
-pip install -r requirements.txt
-### build scipy
-pip install numba Cython
-sudo apt-get install gcc gfortran python3-dev libopenblas-dev liblapack-dev
-cd scipy
-<!-- git checkout maintenance/1.5.x -->
-python setup.py install
+System enviroment:
+> sudo apt-get install gcc gfortran python3-dev libopenblas-dev liblapack-dev
 
+Use conda create 2 enviroment `scipy` `numba`
+#### SciPy
+```
+conda create -n scipy python=3.6 -y
+conda activate scipy
+conda install numba tbb cudatoolkit -y
+pip install pyamg
+pip install -r requirements.txt
+```
+
+#### Numba
+```
+conda create -n numba python=3.6 -y
+conda activate numba
+conda install numba tbb cudatoolkit Cython -y
+pip install pyamg
+pip install -r requirements.txt
+```
+build scipy: bash install_scipy.sh
+
+
+## profile
+> ~/anaconda3/envs/scipy/bin/python -m cProfile -o result_scipy profile_ruge_stuben_solver.py
+
+
+> ~/anaconda3/envs/numba/bin/python -m cProfile -o result_numba profile_ruge_stuben_solver.py
 ## tests
 python test_csr_matvec.py
 
@@ -44,7 +62,16 @@ python test_csr_matvec.py
 ### TODO
 - [ ] matvec
 
-###  matvec
+## Goal of optimazation `pyamg.ruge_stuben_solver`
+1. profile: find the bottleneck operator
+```
+python -m cProfile -o result profile_ruge_stuben_solver.py
+snakeviz result 
+```
+the top 2 operators of sparse matrixes using in `ruge_stuben_solver` are `csr_matvec`,`csr_elmul_csr` ,`csr_matmat`
+
+2. optimize `csr_matvec`
+
 The calling interface is `_mul_vector` of `nb_compresed`
 The implementaation operator is `csr_matvec` of `nb_sparsetools`
 
@@ -54,6 +81,11 @@ Ref to `Sparse Matrix data structures`,it is found that the implementation speed
       - When the number of calculations is < 100, it is slightly slower than SciPy
       - Between 100 and 200, speed is almost the same
       - Calculation times > 200, slightly faster than SciPy
+
+3. optimize `csr_elmul_csr`
+
+4. optimize `csr_matmat`
+
     
 ### mul_scalar
 
